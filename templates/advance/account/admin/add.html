@@ -1,0 +1,70 @@
+<!-- File:add.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'advance/base.html' %}
+{% block head %}
+<script >
+    function validateForm()
+    {
+        var username=document.forms["form"]["username"].value;
+        var password=document.forms["form"]["password"].value;
+        var is_sa=document.getElementById("is_sa");
+        if (username==""){
+            alert("必须填写用户名");
+            return false;
+        }
+        if (password=="") {
+            alert("必须填写密码");
+            return false;
+        }
+        if(is_sa.checked === true){
+            if (confirm("危险！ 您确定添加超级管理员吗? 可能会损坏系统！")) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        {#createRequest("{% url 'advance:ajax' %}?do=add_cla&name_dis="+name_dis+"&person_num="+person_num)#}
+    }
+</script>
+{% endblock head %}
+{% block base %}
+	<div class="row clearfix">
+		<div class="col-sm-12 column">
+            <div class="page-header">
+				<h1>
+					信息统计系统 <small>添加管理员</small>
+				</h1>
+			</div>
+            <p>{{ dis }}</p>
+			<form class="form-horizontal" role="form" id="form"  method="post" onsubmit="return validateForm()">
+				<div class="form-group">
+					 <label for="username" class="col-sm-2 control-label">管理员名</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="username" name="username"/>
+					</div>
+				</div>
+				<div class="form-group">
+					 <label for="password" class="col-sm-2 control-label">管理员密码</label>
+					<div class="col-sm-10">
+						<input type="password" class="form-control" id="password" name="password"/>
+					</div>
+				</div>
+                <div class="form-group has-error">
+					 <label for="is_sa" class="col-sm-2 control-label danger">是否超级管理员</label>
+					<div class="col-sm-10">
+						<input type="checkbox" class="checkbox" value="1" name="is_sa" id="is_sa"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-offset-2 col-sm-10">
+						 <button type="submit" class="btn btn-default">提交</button>
+					</div>
+				</div>
+                <input type="hidden" name="do" value="add_adm">
+                {% csrf_token %}
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock base %}

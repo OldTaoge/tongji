@@ -1,0 +1,33 @@
+<!-- File:personal.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'advance/base.html' %}
+{% block base %}
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+			<div class="page-header">
+				<h1>
+					信息统计系统 <small>个人信息</small>
+				</h1>
+			</div>
+			<dl class="dl-horizontal">
+                <dt>您的ID</dt>
+				<dd>{{adm_inf.pk}}</dd>
+				<dt>用户名</dt>
+				<dd>{{ adm_inf.admin_username }}</dd>
+				<dt>密码</dt>
+				<dd><a href="{% url 'advance:change_password' %}">点此修改</a></dd>
+				<dt>用户等级</dt>
+				<dd>
+                    {% if adm_inf.level == 100 %}
+				        超管
+                    {% else %}
+                        普通管理员
+				    {% endif %}
+                </dd>
+			</dl>
+		</div>
+	</div>
+</div>
+{% endblock base%}

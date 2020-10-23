@@ -1,0 +1,138 @@
+{% extends 'xxtj/base.html' %}
+{% block head %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript">
+    var file_tag = 0;
+    function is_weixin(){
+        var ua = navigator.userAgent.toLowerCase();
+        if(ua.match(/MicroMessenger/i)=="micromessenger") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    var xmlhttp = false;
+    function createRequest(url, form=null) {
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+            if(xmlhttp.overrideMimeType){
+                xmlhttp.overrideMimeType("text/xml");
+            }
+        } else if(window.ActiveXObject) {
+            try{
+                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            }catch (e) {
+                try {
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
+                }catch (e) {}
+            }
+        }
+        if(!xmlhttp){
+            alert("不能创建xmlhttp实例，请不要使用兼容模式或更换浏览器！")
+            return false;
+        }
+        xmlhttp.onreadystatechange = get_sta_inf;
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send(null);
+    }
+    function get_sta_inf() {
+        var return_obj;
+        var statistical;
+        var unstatistical;
+        var i;
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+            statistical = "<table class='table table-striped'>";
+            unstatistical = "<table class='table table-striped'>";
+            return_obj = JSON.parse(xmlhttp.responseText);
+            for (i = 1; i <= return_obj.l_sta; i++) {
+                statistical = statistical + return_obj.statistical[i];
+            }
+            statistical = statistical + "</table>"
+            document.getElementById("statistical").innerHTML = statistical;
+
+            for (i = 1; i <= return_obj.l_unsta; i++) {
+                unstatistical = unstatistical + return_obj.unstatistical[i];
+            }
+            unstatistical = unstatistical + "</table>"
+            document.getElementById("unstatistical").innerHTML = unstatistical
+            for (i = 1; i <= return_obj.l_sta; i++) {
+                $('#carousel-' + i).carousel('pause');
+            }
+            file_tag = return_obj.file_tag;
+        }
+    }
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1);
+             }
+             if (c.indexOf(name) === 0) {
+                return c.substring(name.length, c.length);
+             }
+         }
+        return "";
+    }
+    function query(str) {
+        if(str === "0"){
+            alert("请选择项目");
+            return false;
+        }
+        var json_str = "{{ stu_id_list }}";
+		var form = new FormData();
+		form.append('json', json_str);
+		form.append('csrfmiddlewaretoken', getCookie("csrftoken"));
+        if (is_weixin()){
+            createRequest("{% url 'xxtj:ajax' %}?sta_id=" + str + "&do=get_result_by_sta_where_stu_list&ua=weixin&json=" + json_str);
+        }
+        else{
+            createRequest("{% url 'xxtj:ajax' %}?sta_id=" + str + "&do=get_result_by_sta_where_stu_list&json=" + json_str);
+        }
+    }
+</script>
+{% endblock head %}
+{% block base %}
+    <table align="center">
+        <tr>
+            <td><span style="font-size: 36px; font-family: Georgia, 'Times New Roman',
+            Times, serif; font-weight: bold; text-align: center;">信息统计结果</span></td>
+        </tr>
+    </table>
+    <table width="90%" class="table table-bordered">
+        <tr>
+            <td width="30%"><h4><strong>选择项目</strong></h4></td>
+            <td>
+                <select name="statistics" onchange="query(this.value)" id="statistics" class="form-control">
+                    <option value="0"></option>
+                    {% for key, value in sta_list.items %}
+                        <option value="{{ key }}">{{ value }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td><h4><strong>已提交</strong></h4></td>
+            <td><div id="statistical"></div></td>
+        </tr>
+        <tr>
+            <td><h4><strong>未提交</strong></h4></td>
+            <td><div id="unstatistical"></div></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+{#                <button onclick="clear_()" class="btn btn-warning">清除数据并开始下一次统计</button>#}
+{#                <button onclick="add_description()" class="btn btn-default">添加/修改说明</button>#}
+{#                <button onclick="" class="btn btn-default">下载数据压缩包</button>#}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+{#                <button onclick="advanced()" class="btn btn-default">高级选项</button>#}
+            </td>
+        </tr>
+    </table>
+{% endblock base %}

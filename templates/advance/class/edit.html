@@ -1,0 +1,104 @@
+<!-- File:edit.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'advance/base.html' %}
+{% block head %}
+<script >
+    function validateForm()
+    {
+        var name_dis=document.forms["form"]["name_dis"].value;
+        var person_num=document.forms["form"]["person_num"].value;
+        if (name_dis==""){
+            alert("必须填写班级名");
+            return false;
+        }
+        if (person_num=="") {
+            alert("必须填写人数");
+            return false;
+        }
+        if (parseInt(person_num)<1){
+            alert("人数格式错误");
+            return false;
+        }
+        createRequest("{% url 'advance:ajax' %}?do=edit_cla&class_id={{ cla_inf.pk }}&name_dis="+name_dis+"&person_num="+person_num)
+    }
+    var xmlhttp = false;
+    function createRequest(url) {
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+            if(xmlhttp.overrideMimeType){
+                xmlhttp.overrideMimeType("text/xml");
+            }
+        } else if(window.ActiveXObject) {
+            try{
+                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            }catch (e) {
+                try {
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
+                }catch (e) {}
+            }
+        }
+        if(!xmlhttp){
+            alert("不能创建xmlhttp实例，请不要使用兼容模式或更换浏览器！")
+            return false;
+        }
+        xmlhttp.onreadystatechange = alertContents;
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send(null);
+    }
+    function alertContents() {
+        var return_obj;
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+            return_obj = JSON.parse(xmlhttp.responseText);
+            if (return_obj.status === "success"){
+                alert("修改成功");
+                window.location.replace("{% url 'advance:cla_inf'%}");
+            }
+            else{
+                alert("修改失败");
+                window.location.replace("{% url 'advance:cla_inf'%}");
+            }
+        }
+        if(xmlhttp.readyState === 4 && xmlhttp.status === 500){
+            alert("格式有误")
+        }
+    }
+</script>
+{% endblock head %}
+{% block base %}
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-6 column">
+            <div class="page-header">
+				<h1>
+					信息统计系统 <small>修改班级</small>
+				</h1>
+			</div>
+			<form class="form-horizontal" role="form" id="form"  id="form">
+				<div class="form-group">
+					 <label for="name_dis" class="col-sm-2 control-label">班级名</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="name_dis" name="name_dis" value="{{ cla_inf.name_dis }}"/>
+					</div>
+				</div>
+				<div class="form-group">
+					 <label for="person_num" class="col-sm-2 control-label">人数</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="person_num" name="person_num" value="{{ cla_inf.person_num }}"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-offset-2 col-sm-10">
+                        <button type="button" class="btn btn-warning" onclick="validateForm()">提交</button>
+                        <button type="button" class="btn btn-default" onclick="window.location.href='{% url 'advance:cla_inf' %}'">返回</button>
+					</div>
+				</div>
+                <input type="hidden" name="do" value="add_cla">
+			</form>
+            <p>说明</p>
+            <small>统计信息和学生信息请在对应的页面修改</small>
+			</blockquote>
+		</div>
+	</div>
+</div>
+{% endblock base %}

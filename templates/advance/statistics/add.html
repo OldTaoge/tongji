@@ -1,0 +1,173 @@
+<!-- File:add.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'advance/base.html' %}
+{% load static %}
+{% block head %}
+    <script language="JavaScript" src="{% static '/xxtj/base/js/cookie.js' %}"></script>
+<script >
+    function validateForm()
+    {
+        var name=document.forms["form"]["statistics_name"].value;
+        var description = document.forms['form']["statistics_description"].value;
+        var class_id = document.forms["form"]["statistics_class"].value;
+        var obj = document.forms["form"]["adm_sta"];
+        var json = {"do":"add_sta","description":description};
+        var check_val = [];
+        for (var i = 0; i < obj.length; i++) {
+            if (obj[i].checked) {
+                check_val.push(obj[i].value);
+            }
+            json["admin_id"] = check_val;
+        }
+        if (name==""){
+            alert("必须填写统计名");
+            return false;
+        }
+        if (description==""){
+            alert("必须填写统计说明");
+            return false;
+        }
+        if (class_id==0) {
+            alert("必须选择班级");
+            return false;
+        }
+        json["sta_name"]=name;
+        json["sta_des"]=description;
+        json["class_id"]=class_id;
+        json["need_upload"]=document.getElementById("need_upload").checked;
+        var json_str = JSON.stringify(json);
+        var form = new FormData();
+		form.append('json', json_str);
+		form.append('csrfmiddlewaretoken', getCookie("csrftoken"));
+        createRequest("{% url 'advance:ajax' %}?do=add_sta", form);
+    }
+    var xmlhttp = false;
+    function createRequest(url, form=null) {
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+            if(xmlhttp.overrideMimeType){
+                xmlhttp.overrideMimeType("text/xml");
+            }
+        } else if(window.ActiveXObject) {
+            try{
+                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            }catch (e) {
+                try {
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
+                }catch (e) {}
+            }
+        }
+        if(!xmlhttp){
+            alert("不能创建xmlhttp实例，请不要使用兼容模式或更换浏览器！")
+            return false;
+        }
+        xmlhttp.onreadystatechange = alertContents;
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send(null);
+    }
+    function alertContents() {
+        var return_obj;
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+            return_obj = JSON.parse(xmlhttp.responseText);
+            if (return_obj.status === "success"){
+                alert("添加成功");
+                window.location.replace("{% url 'advance:sta_inf'%}");
+            }
+            else{
+                alert("添加失败");
+                window.location.replace("{% url 'advance:sta_inf'%}");
+            }
+        }
+        if(xmlhttp.readyState === 4 && xmlhttp.status === 500){
+            alert("格式有误")
+        }
+    }
+    function add_inf_func() {
+        var td1 = document.createElement("td");
+        td1.innerHTML = "<input type='text' id=inf_name[]/>";
+        var td2 = document.createElement("td")
+        td2.innerHTML = ""
+    }
+</script>
+{% endblock head %}
+{% block base %}
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-6 column">
+            <div class="page-header">
+				<h1>
+					信息统计系统 <small>添加统计</small>
+				</h1>
+			</div>
+			<form class="form-horizontal" role="form" id="form">
+				<div class="form-group">
+					<label for="statistics_name" class="col-sm-2 control-label">统计名</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="statistics_name"/>
+					</div>
+				</div>
+                <div class="form-group">
+					<label for="statistics_description" class="col-sm-2 control-label">统计说明</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="statistics_description"/>
+					</div>
+				</div>
+				<div class="form-group">
+                    <label for="statistics_class" class="col-sm-2 control-label">班级</label>
+					<div class="col-sm-10">
+                        <select class="form-control" id="statistics_class">
+                            <option value="0"></option>
+                            {% for item in class_inf %}
+                                <option value="{{ item.pk }}">{{ item.name_dis }}</option>
+                            {% endfor %}
+                        </select>
+					</div>
+				</div>
+                <div class="form-group">
+                    <label for="need_upload" class="col-sm-2 control-label">上传照片</label>
+					<div class="col-sm-10">
+                        <input type="checkbox" id="need_upload" name="need_upload">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="sta_admin" class="col-sm-2 control-label">管理用户</label>
+					<div class="col-sm-10">
+{#                        <select class="form-control" id="sta_admin">#}
+{#                            <input type="checkbox" naem value="0">#}
+                            {% for item in admin_inf %}
+                                {%if item.pk == admin_id %}
+                                    <input id="adm_sta" type="checkbox" value="{{ item.pk }}" disabled checked>{{ item.admin_username }}<br>
+                                {% else %}
+                                    <input id="adm_sta" type="checkbox" value="{{ item.pk }}">{{ item.admin_username }}<br>
+                                {% endif %}
+                            {% endfor %}
+{#                        </select>#}
+					</div>
+				</div>
+                <div class="form-group">
+                    <lable for="add_inf_button" class="col-sm-2 control-label">附加信息</lable>
+                    <div class="col-sm-10">
+                        <input type="button" onclick="">
+                        <table class="table" id="inf_table">
+                            <thead>
+                                <tr>
+                                    <th>名称</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+
+                        </table>
+                    </div>
+                </div>
+				<div class="form-group">
+					<div class="col-sm-offset-2 col-sm-10">
+						 <button type="button" class="btn btn-default" onclick="validateForm()">提交</button>
+					</div>
+				</div>
+                <input type="hidden" name="do" value="add_cla">
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock base %}

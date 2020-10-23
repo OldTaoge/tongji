@@ -1,0 +1,158 @@
+<!-- File:add.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{%  extends 'xxtj/base.html' %}
+{% load static %}
+{% block head %}
+    <script type="text/javascript">
+    var xmlhttp = false;
+    function createRequest(url) {
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+            if(xmlhttp.overrideMimeType){
+                xmlhttp.overrideMimeType("text/xml");
+            }
+        } else if(window.ActiveXObject) {
+            try{
+                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            }catch (e) {
+                try {
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
+                }catch (e) {}
+            }
+        }
+        if(!xmlhttp){
+            alert("不能创建xmlhttp实例，请不要使用兼容模式或更换浏览器！")
+            return false;
+        }
+        xmlhttp.onreadystatechange = alertContents;
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send(null);
+    }
+    function alertContents() {
+        var return_obj;
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            return_obj = JSON.parse(xmlhttp.responseText);
+            if (return_obj.status === "success"){
+                alert("添加成功");
+                let elem = document.getElementById("tips_success_div");
+	            elem.style.display = "";
+                go_index();
+                return;
+            }
+        }
+        if (xmlhttp.readyState ==4){
+                alert("添加失败");
+                go_index();
+                return;
+        }
+    }
+    function add_recond(str) {
+        {% if file_params %}
+            createRequest("{% url 'xxtj:ajax' %}?statistics={{ statistics.pk }}&stu_id={{ name.pk }}&file_params={{ file_params }}&do=add_recond");
+        {% else %}
+            createRequest("{% url 'xxtj:ajax' %}?statistics={{ statistics.pk }}&stu_id={{ name.pk }}&do=add_recond");
+        {% endif %}
+    }
+    function go_index() {
+        window.location.replace("{% url 'xxtj:index' class_id%}");
+    }
+</script>
+{% endblock head %}
+{% block base %}
+<table class="table table-striped" width="90%">
+    <tr>
+        <td colspan="2"><h2>请确认以下信息</h2></td>
+    </tr>
+    <tr>
+        <td width="30%"><h4><strong>项目</strong></h4></td>
+        <td><h5><strong>{{ statistics.statistics_name }}</strong></h5></td>
+    </tr>
+    <tr>
+        <td><h4><strong>姓名</strong></h4></td>
+        <td><h5><strong>{{ name.student_name }}</strong></h5></td>
+    </tr>
+{% if file_params %}
+
+    <tr>
+        <td><strong>照片/视频</strong></td>
+        <td>
+            <div class="carousel slide" id="carousel-307250">
+                <ol class="carousel-indicators">
+                    {% for file in file_list %}
+                        {% if forloop.first %}
+                            <li class="active" data-slide-to="{{forloop.counter}}" data-target="#carousel-307250"></li>
+                        {% else %}
+                            <li data-slide-to="{{forloop.counter}}" data-target="#carousel-307250"></li>
+                        {% endif %}
+                    {% endfor %}
+                </ol>
+                <div class="carousel-inner">
+                    {% for key,value in file_suffix.items %}
+                        {% if forloop.first %}
+                            <div class="item active">
+                                {% if value == 'jpg' %}
+                                <img alt="" src="{% static 'upload/' %}{{ file_params }}/{{ key }}" />
+                                {% endif %}
+                                {% if value == 'png' %}
+                                <img alt="" src="{% static 'upload/' %}{{ file_params }}/{{ key }}" />
+                                {% endif %}
+                                {% if value == 'mp4' %}
+                                <video src="{% static 'upload/' %}{{ file_params }}/{{ key }}" class="container"></video>
+                                {% endif %}
+                                {% if value == 'mov' %}
+                                <video src="{% static 'upload/' %}{{ file_params }}/{{ key }}" class="container"></video>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="item">
+                                {% if value == 'jpg' %}
+                                <img alt="" src="{% static 'upload/' %}{{ file_params }}/{{ key }}" />
+                                {% endif %}
+                                {% if value == 'png' %}
+                                <img alt="" src="{% static 'upload/' %}{{ file_params }}/{{ key }}" />
+                                {% endif %}
+                                {% if value == 'mp4' %}
+                                <video src="{% static 'upload/' %}{{ file_params }}/{{ key }}" class="container"></video>
+                                {% endif %}
+                                {% if value == 'mov' %}
+                                <video src="{% static 'upload/' %}{{ file_params }}/{{ key }}" class="container"></video>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                    {% endfor %}
+                </div>
+                <a class="left carousel-control" href="#carousel-307250" data-slide="prev">
+                    <span class="glyphicon glyphicon-chevron-left"></span>
+                </a>
+                <a class="right carousel-control" href="#carousel-307250" data-slide="next">
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                </a>
+            </div>
+        </td>
+    </tr>
+{% endif %}
+    <tr>
+        <td>
+            <input type="button"  onclick="add_recond()" value="确认">
+{#                  <input type="hidden" name="statistics" value="{{ statistics.pk }}">#}
+{#                  <input type="hidden" name="name" value="{{ name.pk }}">#}
+{#                  {% csrf_token %}#}
+
+            </form>
+        </td>
+        <td>
+{#              <form action="{% url 'xxtj:index' class_id %}">#}
+                <input type="button" onclick="go_index()" value="取消">
+            </form>
+        </td>
+    </tr>
+</table>
+<div id="tips_success_div" class="alert alert-success" role="alert" style="display: none">添加完成！</div>
+{% endblock base %}
+
+
+
+
+

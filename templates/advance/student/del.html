@@ -1,0 +1,126 @@
+<!-- File:del.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'advance/base.html' %}
+{% block head %}
+<script>
+    function validateForm()
+    {
+        if (confirm("你确定删除{{ stu_inf.student_name }}?")) {
+            createRequest("{% url 'advance:ajax' %}?do=del_stu&stu_id={{ stu_inf.pk }}");
+        } else {
+            window.location.href="{% url 'advance:stu_inf' %}";
+        }
+    }
+    var xmlhttp = false;
+    function createRequest(url) {
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+            if(xmlhttp.overrideMimeType){
+                xmlhttp.overrideMimeType("text/xml");
+            }
+        } else if(window.ActiveXObject) {
+            try{
+                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            }catch (e) {
+                try {
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
+                }catch (e) {}
+            }
+        }
+        if(!xmlhttp){
+            alert("不能创建xmlhttp实例，请不要使用兼容模式或更换浏览器！")
+            return false;
+        }
+        xmlhttp.onreadystatechange = alertContents;
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send(null);
+    }
+    function alertContents() {
+        var return_obj;
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+            return_obj = JSON.parse(xmlhttp.responseText);
+            if (return_obj.status === "success"){
+                alert("删除成功");
+                window.location.replace("{% url 'advance:stu_inf'%}");
+            }
+            else{
+                alert("删除失败");
+                window.location.replace("{% url 'advance:stu_inf'%}");
+            }
+        }
+    }
+</script>
+{% endblock head %}
+{% block base %}
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+			<div class="page-header">
+				<h1>
+					信息统计系统<small>删除学生</small>
+				</h1>
+			</div>
+			<div class="jumbotron">
+				<h1>
+					您将删除一个学生！
+				</h1>
+				<p>
+                    您同时将删除关联在这个学生下的统计数据！<br>
+                    学生：{{ stu_inf.student_name }}
+				</p>
+				<p>
+					 <a class="btn btn-large btn-lg btn-danger" onclick="validateForm()">删除</a>
+					 <a class="btn btn-large btn-lg btn-primary" onclick="window.location.href='{% url 'advance:cla_inf' %}'">取消</a>
+				</p>
+			</div>
+		</div>
+	</div>
+{#	<div class="row clearfix">#}
+{#		<div class="col-md-6 column">#}
+{#            <p>#}
+{#			    这是您将<strong>删除</strong>的统计数据：#}
+{#            </p>#}
+{#			<table class="table">#}
+{#				<thead>#}
+{#					<tr>#}
+{#						<th>ID</th>#}
+{#						<th>名称</th>#}
+{#					</tr>#}
+{#				</thead>#}
+{#				<tbody>#}
+{#                {% for item in rec_inf %}#}
+{#                    <tr>#}
+{#                        <td>{{ rec.pk }}</td>#}
+{#                        <td>{{ item.statistics_name }}</td>#}
+{#                    </tr>#}
+{#                {% endfor %}#}
+{#				</tbody>#}
+{#			</table>#}
+{#		</div>#}
+{#		<div class="col-md-6 column">#}
+{#			<table class="table">#}
+{#                <p>#}
+{#			        这是您将<strong>删除</strong>的学生列表：#}
+{#                </p>#}
+{#				<thead>#}
+{#					<tr>#}
+{#						<th>ID</th>#}
+{#						<th>姓名</th>#}
+{#					</tr>#}
+{#				</thead>#}
+{#				<tbody>#}
+{#                    {% for item in stu_inf %}#}
+{#                        <tr>#}
+{#                            <td>{{ item.pk }}</td>#}
+{#                            <td>{{ item.student_name }}</td>#}
+{#                        </tr>#}
+{#                    {% endfor %}#}
+{##}
+{#				</tbody>#}
+{#			</table>#}
+{#		</div>#}
+	</div>
+</div>
+</div>
+{% endblock base %}

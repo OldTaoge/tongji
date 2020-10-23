@@ -1,0 +1,56 @@
+<!-- File:result.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'advance/base.html' %}
+{% block base %}
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+			<div class="page-header">
+				<h1>
+					信息统计系统 <small>结果查看</small>
+				</h1>
+			</div>
+			<div class="alert alert-dismissable alert-success">
+				 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+				<h4>
+					注意!
+				</h4> <strong>{{adm_inf.admin_username}}</strong><br>
+                我们信任您已经从系统管理员那里了解了日常注意事项。总结起来无外乎这三点：<br>
+                #1) 尊重别人的隐私。<br>
+                #2) 操作前要先考虑（后果和风险）。<br>
+                #3) 权利越大，责任越大。
+			</div>
+            <table width="90%" class="table table-bordered">
+                <tr>
+                    <td width="30%"><h4><strong>说明</strong></h4></td>
+                    <td><p>{{ sta_inf.statistics_description }}</p></td>
+                </tr>
+                <tr>
+                    <td><h4><strong>已提交</strong></h4></td>
+                    <td><table class="table table-striped">
+                            {% for item in recond %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.dt }}</td>
+                                </tr>
+                            {% endfor %}
+                    </table></td>
+                </tr>
+                <tr>
+                    <td><h4><strong>未提交</strong></h4></td>
+                    <td><table class="table table-striped">
+
+                            {% for item in unrecond %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                </tr>
+                            {% endfor %}
+
+                    </table></td>
+                </tr>
+            </table>
+		</div>
+	</div>
+</div>
+{% endblock base %}

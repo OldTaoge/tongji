@@ -1,0 +1,234 @@
+<!-- File:index.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'xxtj/base.html' %}
+{% load static from static%}
+{% block head %}
+    <style type="text/css">
+	*{margin:0; padding:0;}
+	a{text-decoration: none;}
+	img{max-width: 100%; height: auto;}
+	.weixin-tip{display: none; position: fixed; left:0; top:0; bottom:0; background: rgba(0,0,0,0.8); filter:alpha(opacity=80);  height: 100%; width: 100%; z-index: 100;}
+	.weixin-tip p{text-align: center; margin-top: 10%; padding:0 5%;}
+	</style>
+    <script type="text/javascript">
+    var xmlhttp = false;
+    var set_file_lable = false;
+    function createRequest(url) {
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+            if(xmlhttp.overrideMimeType){
+                xmlhttp.overrideMimeType("text/xml");
+            }
+        } else if(window.ActiveXObject) {
+            try{
+                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            }catch (e) {
+                try {
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
+                }catch (e) {}
+            }
+        }
+        if(!xmlhttp){
+            alert("不能创建xmlhttp实例，请不要使用兼容模式或更换浏览器！");
+            return false;
+        }
+        xmlhttp.onreadystatechange = alertContents;
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send(null);
+    }
+    function alertContents() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status === 200) {
+            re_obj = JSON.parse(xmlhttp.responseText);
+            document.getElementById("shuoming_by_ajax").innerHTML = re_obj["description"];
+            if(re_obj["need_upload"] === true && set_file_lable === false){
+                if(is_weixin())
+                {
+                    weixin_callout();
+                    return;
+                }
+                set_file_lable = true;
+                {#document.getElementById("file_div").innerHTML = "<tr><td><input type=button onClick=upload() value=选择照片(支持多选)></td></tr>";#}
+                var form = document.getElementById("table");
+                var ntr = document.createElement("tr");
+                var ntd1 = document.createElement("td");
+                var ntd2 = document.createElement("td");
+                ntd1.innerHTML = "<h4><strong>选择照片(支持多选重选)</strong></h4>";
+                ntr.appendChild(ntd1);
+                ntd2.innerHTML = "<input type='file' onchange='upload()' id='file' multiple='multiple'>";
+                ntr.appendChild(ntd2);
+                form.appendChild(ntr);
+                var ntr = document.createElement("tr");
+                var ntd = document.createElement("td");
+                ntd.colSpan=2;
+                ntd.innerHTML = "<div class='progress progress-striped active' id='myBar' style='display: none'>"+
+                    "<div class='progress-bar progress-success' id='progress'>"+
+                    "<div id='progress_num'></div>"+
+                    "</div>"+
+                    "</div>" +
+                    "<input type='hidden' name='file_params' value='"+re_obj["params"]+"'>";
+                ntr.appendChild(ntd);
+                form.appendChild(ntr);
+                set_params("{% url 'xxtj:file'%}", {
+                    'save_id': re_obj["params"],
+                    'csrfmiddlewaretoken': getCookie("csrftoken")
+                })
+            }
+            if(re_obj['status'] != ""){
+                document.getElementById("status").innerHTML = re_obj['status'];
+            }
+        }
+    }
+    function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays*24*60*60*1000));
+        var expires = "expires="+ d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        {#document.cookie = cname + "=" + cvalue + ";" + ";path=/";#}
+    }
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1);
+             }
+             if (c.indexOf(name) === 0) {
+                return c.substring(name.length, c.length);
+             }
+         }
+        return "";
+    }
+    function weixin_callout() {
+        if(is_weixin())
+        {
+            var winHeight = $(window).height();
+            $(".weixin-tip").css("height", winHeight);
+            $(".weixin-tip").show();
+            return;
+        }
+    }
+    function query_by_statistics() {
+        var str = document.forms["main"]["statistics"].value;
+        var stu_id=document.forms["main"]["name"].value;
+        if(str==="0"){
+            window.alert("请在 选择项目 中选择您要进行提交的项目");
+            return false;
+        }
+        else{
+            if(stu_id !== 0){
+                createRequest("{% url 'xxtj:ajax' %}?statistics=" + str + "&stu_id="+stu_id+"&do=query_description_by_statistics");
+            }
+            else{
+                createRequest("{% url 'xxtj:ajax' %}?statistics=" + str + "&do=query_description_by_statistics");
+            }
+        }
+    }
+    function validateForm()
+    {
+        var sta=document.forms["main"]["statistics"].value;
+        var name=document.forms["main"]["name"].value;
+        if (sta==="0"){
+            alert("项目必须选择");
+            return false;
+        }
+        if (name==="0"){
+            alert("姓名必须选择");
+            return false;
+        }
+        if (is_onload===0 && set_file_lable){
+            alert("文件必须上传(在底下)");
+            return false;
+        }
+        setCookie("stu_id", name, 365);
+    }
+    window.onload=function () {
+        var stu_id = getCookie("stu_id");
+        if(stu_id !== "")
+            document.forms["main"]["name"].value=stu_id;
+    }
+    </script>
+    <script type="text/javascript" src="{% static 'xxtj/base/js/upload_4.js' %}"></script>
+{% endblock head %}
+
+
+{% block base %}
+    <div class="weixin-tip">
+		<p>
+			<img src="{% static 'xxtj/base/img/live_weixin_1.png' %}" alt="微信打开"/>
+		</p>
+	</div>
+    <div class="container">
+       <div class="row clearfix">
+           <div class="col-sm-12 column">
+               <div class="jumbotron" >
+                   <h1>
+                       信息统计系统
+                   </h1>
+
+{#                   <p>#}
+{#                        <a class="btn btn-primary btn-large" href="#">Learn more</a>#}
+{#                   </p>#}
+               </div>
+           </div>
+       </div>
+   </div>
+    <form action="{% url 'xxtj:add' %}" name="main" onsubmit="return validateForm()" id="form">
+        <table width="90%" class="table table-striped" id="table">
+{#            <thead>#}
+{#					<tr>#}
+{#						<th>#}
+{##}
+{#						</th>#}
+{#						<th>#}
+{##}
+{#						</th>#}
+{#            </thead>#}
+            <tbody>
+                <tr>
+                    <td width="30%"><h4><strong>选择项目</strong></h4></td>
+                    <td width="70%"><label>
+                        <select name="statistics" onchange=query_by_statistics()>
+                            <option value="0"></option>
+                            {% for statistic in statistics %}
+                                <option value="{{statistic.pk}}">{{ statistic.statistics_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label></td>
+                </tr>
+                <tr>
+                    <td><h4><strong>选择姓名</strong></h4></td>
+                    <td><label>
+                        <select name="name" onchange="query_by_statistics()">
+                            <option value="0"></option>
+                            {% for name in names %}
+                                <option value="{{ name.pk }}">{{ name.student_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label></td>
+                </tr>
+                <tr>
+                    <td><h4><strong>说明</strong></h4></td>
+                    <td><span id="shuoming_by_ajax"></span></td>
+                </tr>
+                <tr>
+                    <td><h4><strong>状态</strong></h4></td>
+                    <td><span id="status"></span></td>
+                </tr>
+                <tr>
+                    <td><h4><strong>提交</strong></h4></td>
+                    <td><input type="submit" class="btn btn-default" value="提交"></td>
+                </tr>
+                <div id="file_div"></div>
+                <div id="tips_addmore_div" class="alert alert-success" role="alert" style="display: none">您可以再次点击添加文件以添加更多的照片！</div>
+            </tbody>
+        </table>
+        {% csrf_token %}
+        <input type="hidden" name="class_id" value="{{ class_id }}">
+    </form>
+{% endblock base %}
+
+
+

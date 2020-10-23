@@ -1,0 +1,261 @@
+<!-- File:result.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'xxtj/base.html' %}
+{% load static %}
+{% block head %}
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <script type="text/javascript">
+    var file_tag = false;
+    var timer = null;
+    function is_weixin(){
+        var ua = navigator.userAgent.toLowerCase();
+        if(ua.match(/MicroMessenger/i)=="micromessenger") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    function weixin_callout() {
+        if(is_weixin())
+        {
+            var winHeight = $(window).height();
+            $(".weixin-tip").css("height", winHeight);
+            $(".weixin-tip").show();
+            return;
+        }
+    }
+    var xmlhttp = false;
+    function createRequest(url, callback) {
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+            if(xmlhttp.overrideMimeType){
+                xmlhttp.overrideMimeType("text/xml");
+            }
+        } else if(window.ActiveXObject) {
+            try{
+                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            }catch (e) {
+                try {
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
+                }catch (e) {}
+            }
+        }
+        if(!xmlhttp){
+            alert("不能创建xmlhttp实例，请不要使用兼容模式或更换浏览器！");
+            return false;
+        }
+        xmlhttp.onreadystatechange = callback;
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send(null);
+    }
+    function get_sta_inf() {
+        var return_obj;
+        var statistical;
+        var unstatistical;
+        var i;
+        statistical="<table class='table table-striped'>";
+        unstatistical="<table class='table table-striped'>";
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+            return_obj = JSON.parse(xmlhttp.responseText);
+            document.getElementById("description").innerHTML=return_obj.description;
+            for (i = 1; i <= return_obj.l_sta; i++){
+                statistical = statistical + return_obj.statistical[i];
+            }
+            statistical = statistical + "</table>"
+            document.getElementById("statistical").innerHTML=statistical;
+
+            for (i = 1; i <= return_obj.l_unsta; i++){
+                unstatistical = unstatistical + return_obj.unstatistical[i];
+            }
+            unstatistical = unstatistical + "</table>"
+            document.getElementById("unstatistical").innerHTML=unstatistical
+            for(i=1; i<=return_obj.l_sta; i++) {
+                $('#carousel-'+ i).carousel('pause');
+            }
+            file_tag = return_obj.file_tag;
+        }
+
+    }
+    function clear_response_() {
+        var return_obj;
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+            return_obj = JSON.parse(xmlhttp.responseText);
+            if (return_obj.status === "success") {
+                alert("数据清除成功！");
+                location.reload();
+            }
+        }
+    }
+    function query(str) {
+        if(str === "0"){
+            alert("请选择项目");
+            return false;
+        }
+        if (is_weixin()){
+            createRequest("{% url 'xxtj:ajax' %}?statistics=" + str + "&do=get_result_by_sta&ua=weixin", get_sta_inf);
+        }
+        else{
+            createRequest("{% url 'xxtj:ajax' %}?statistics=" + str + "&do=get_result_by_sta", get_sta_inf);
+        }
+    }
+    function clear_() {
+        var statistics=document.getElementById("statistics").value;
+        if(statistics === "0"){
+            alert("请选择项目");
+            return false;
+        }
+        createRequest("{% url 'xxtj:ajax' %}?statistics= " + statistics + "&do=clear_sta", clear_response_);
+    }
+    function add_description() {
+        window.location.href="{% url 'xxtj:result'%}" + "?admin_id={{ admin_id }}&do=add_description";
+    }
+    function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays*24*60*60*1000));
+        var expires = "expires="+ d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        {#document.cookie = cname + "=" + cvalue + ";" + ";path=/";#}
+    }
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+             }
+             if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+             }
+         }
+        return "";
+    }
+    function getQueryVariable(variable){
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+                var pair = vars[i].split("=");
+                if(pair[0] == variable){return pair[1];}
+        }
+        return(false);
+    }
+    function advanced() {
+        var token;
+        if (getQueryVariable("admin_id") != false) {
+            if ((token = getCookie("token")) != "") {
+                createRequest("{% url 'xxtj:ajax' %}?do=check_login_token&admin_id={{ admin_id }}&token=" + token, check_token)
+            }
+            else{
+                alert("请先登录");
+                window.location.href="{% url 'advance:login' %}?admin_id={{ admin_id }}&goto=result_advanced";
+            }
+        }
+    }
+    function check_token() {
+        var return_obj;
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+            return_obj = JSON.parse(xmlhttp.responseText);
+            if(return_obj.status === "true"){
+                setCookie("admin_id", "{{ admin_id }}", 365)
+                window.location.href="{% url 'advance:index'%}";
+            }
+            else{
+                alert("请先登录");
+                setCookie("admin_id", "{{ admin_id }}", 365)
+                window.location.href="{% url 'advance:login' %}?admin_id={{ admin_id }}&goto=result_advanced";
+            }
+        }
+    }
+    function mkdl_zip() {
+        if (file_tag === false){
+            alert("您选择的统计没有照片信息");
+            return;
+        }
+        if(is_weixin())
+        {
+            weixin_callout();
+            return false;
+        }
+        sta_id = document.getElementById("statistics").value;
+        createRequest("https://www.duwentao.cf:21286/mkzip/mkzip.php?do=mkzip&sta_id=" + sta_id , console.log("create_success"));
+        alert("正在生成压缩包，生成完成后会自动开始下载，请耐心等待~");
+        if(timer == null){
+            timer = setInterval(function () {
+                createRequest("https://www.duwentao.cf:21286/mkzip/mkzip.php?do=query_zip&sta_id=" + sta_id, zip_query_callback);
+            },5000);
+        }
+        return;
+    }
+    function zip_query_callback() {
+        if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+            return_obj = JSON.parse(xmlhttp.responseText);
+            if(return_obj["status"] == "finish"){
+                window.clearInterval(timer);
+                timer = null;
+                alert("已生成压缩包,若未开始下载，请检查是否被浏览器拦截;\r\n"+return_obj["url"]);
+                window.open(return_obj["url"]);
+            }
+        }
+    }
+</script>
+    <style type="text/css">
+	*{margin:0; padding:0;}
+	a{text-decoration: none;}
+	img{max-width: 100%; height: auto;}
+	.weixin-tip{display: none; position: fixed; left:0; top:0; bottom:0; background: rgba(0,0,0,0.8); filter:alpha(opacity=80);  height: 100%; width: 100%; z-index: 100;}
+	.weixin-tip p{text-align: center; margin-top: 10%; padding:0 5%;}
+	</style>
+{% endblock head %}
+{% block base %}
+    <table align="center">
+        <tr>
+            <td><span style="font-size: 36px; font-family: Georgia, 'Times New Roman',
+            Times, serif; font-weight: bold; text-align: center;">信息统计结果</span></td>
+        </tr>
+    </table>
+    <table width="90%" class="table table-bordered">
+        <tr>
+            <td width="30%"><h4><strong>选择项目</strong></h4></td>
+            <td>
+                <select name="statistics" onchange="query(this.value)" id="statistics" class="form-control">
+                    <option value="0"></option>
+                    {% for key, value in statistics.items %}
+                        <option value="{{ key }}">{{ value }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td><h4><strong>说明</strong></h4></td>
+            <td><div id="description"></div></td>
+        </tr>
+        <tr>
+            <td><h4><strong>已提交</strong></h4></td>
+            <td><div id="statistical"></div></td>
+        </tr>
+        <tr>
+            <td><h4><strong>未提交</strong></h4></td>
+            <td><div id="unstatistical"></div></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button onclick="clear_()" class="btn btn-warning">清除数据并开始下一次统计</button>
+                <button onclick="add_description()" class="btn btn-default">添加/修改说明</button>
+                <button onclick="mkdl_zip()" class="btn btn-default">下载数据压缩包</button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button onclick="advanced()" class="btn btn-default">高级选项</button>
+            </td>
+        </tr>
+    </table>
+        <div class="weixin-tip">
+		<p>
+			<img src="{% static 'xxtj/base/img/live_weixin_1.png' %}" alt="微信打开"/>
+		</p>
+	</div>
+{% endblock base %}

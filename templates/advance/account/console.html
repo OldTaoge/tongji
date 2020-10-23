@@ -1,0 +1,95 @@
+<!-- File:console.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'advance/base.html' %}
+{% block base %}
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+			<div class="page-header">
+				<h1>
+					信息统计系统 <small>系统管理</small>
+				</h1>
+			</div>
+			<div class="alert alert-dismissable alert-success">
+				 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+				<h4>
+					注意!
+				</h4> <strong>{{adm_inf.admin_username}}</strong><br>
+                我们信任您已经从系统管理员那里了解了日常注意事项。总结起来无外乎这三点：<br>
+                #1) 尊重别人的隐私。<br>
+                #2) 操作前要先考虑（后果和风险）。<br>
+                #3) 权利越大，责任越大。
+			</div>
+			<div class="panel-group" id="panel-468044">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						 <a class="panel-title collapsed" data-toggle="collapse" data-parent="#panel-468044" href="#panel-element-1">所有管理员信息</a>
+					</div>
+					<div id="panel-element-1" class="panel-collapse collapse">
+						<div class="panel-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <th>ID</th>
+                                    <th>用户名</th>
+                                    <th>等级</th>
+                                    <th>操作</th>
+                                </thead>
+                                <tbody>
+                                    {% for item in all_adm_inf %}
+                                     <tr>
+                                        <td>{{item.pk}}</td>
+                                        <td>{{item.admin_username}}</td>
+                                        <td>
+                                            {% if item.level < 100 %}
+                                                普通用户
+                                            {% else %}
+                                                超级管理员
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'advance:account_console.edit_admin' %}?adm_id={{ item.pk }}" id="edit_adm">修改</a>
+                                            <a href="{% url 'advance:account_console.del_admin' %}?adm_id={{ item.pk }}" id="del_adm">删除</a>
+                                            <a href="{% url 'xxtj:result' %}?admin_id={{ item.pk }}" id="get_result">结果入口</a>
+                                        </td>
+                                     </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+						</div>
+					</div>
+				</div>
+                <div class="panel panel-default">
+					<div class="panel-heading" id="sta_inf_all">
+						 <a class="panel-title collapsed" data-toggle="collapse" data-parent="#panel-468044" href="#panel-element-2">所有统计信息</a>
+					</div>
+					<div id="panel-element-2" class="panel-collapse collapse">
+						<div class="panel-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <th>ID</th>
+                                    <th>统计名</th>
+                                    <th>班级</th>
+                                    <th>操作</th>
+                                </thead>
+                                <tbody>
+                                    {% for item in all_sta_inf %}
+                                     <tr>
+                                        <td>{{ item.pk }}</td>
+                                        <td>{{ item.name }}</td>
+                                        <td>{{ item.class }}</td>
+                                        <td>
+                                            <a href="{% url 'advance:account_console.result' %}?sta_id={{ item.pk }}" id="sta_result">结果入口</a>
+                                        </td>
+                                     </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

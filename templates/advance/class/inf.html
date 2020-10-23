@@ -1,0 +1,51 @@
+<!-- File:inf.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'advance/base.html' %}
+{% block base %}
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+			<div class="page-header">
+				<h1>
+					信息统计系统<small>班级信息</small>
+				</h1>
+			</div>
+		</div>
+	</div>
+		<div class="col-sm-8 column">
+            <p>
+                {{ inf }}
+            </p>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>编号</th>
+						<th>班级名</th>
+						<th>人数</th>
+                        <th>学生信息</th>
+                        <th>统计信息</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody>
+                {% for item in cla_inf %}
+                    <tr>
+                        <td>{{ item.pk }}</td>
+                        <td>{{ item.name_dis }}</td>
+                        <td>{{ item.person_num }}</td>
+                        <td><a href="{% url 'advance:stu_inf' %}?class={{ item.pk }}" id="stu_inf">点击查看</a></td>
+                        <td><a href="{% url 'advance:sta_inf' %}?class={{ item.pk }}" id="sta_inf">点击查看</a></td>
+                        <td>
+                            <a href="{% url 'advance:edit_cla' %}?class={{ item.pk }}" id="edit_cla">修改 </a>
+                            <a href="{% url 'advance:del_cla' %}?class={{ item.pk }}" id="del_cla"> 删除</a>
+                            <a href="{% url 'xxtj:index' item.pk %}" id="get_index">获取入口</a>
+                        </td>
+                {% endfor %}
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock base %}

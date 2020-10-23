@@ -1,0 +1,129 @@
+<!-- File:add_description.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'xxtj/base.html' %}
+{% load static %}
+{% block head %}
+    <style type="text/css">
+	*{margin:0; padding:0;}
+	a{text-decoration: none;}
+	img{max-width: 100%; height: auto;}
+	.weixin-tip{display: none; position: fixed; left:0; top:0; bottom:0; background: rgba(0,0,0,0.8); filter:alpha(opacity=80);  height: 100%; width: 100%; z-index: 100;}
+	.weixin-tip p{text-align: center; margin-top: 10%; padding:0 5%;}
+	</style>
+    <script language="JavaScript">
+        window.onload=function () {
+            set_params("{% url 'xxtj:file'%}", {
+                    'save_id': "{{save_id}}",
+                    'csrfmiddlewaretoken': getCookie("csrftoken")
+                })
+        }
+        var xmlhttp = false;
+        function createRequest(url) {
+            if (window.XMLHttpRequest) {
+                xmlhttp = new XMLHttpRequest();
+                if(xmlhttp.overrideMimeType){
+                    xmlhttp.overrideMimeType("text/xml");
+                }
+            } else if(window.ActiveXObject) {
+                try{
+                    xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+                }catch (e) {
+                    try {
+                        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
+                    }catch (e) {}
+                }
+            }
+            if(!xmlhttp){
+                alert("不能创建xmlhttp实例，请不要使用兼容模式或更换浏览器！")
+                return false;
+            }
+            xmlhttp.onreadystatechange = alertContents;
+            xmlhttp.open("GET", url, true);
+            xmlhttp.send(null);
+        }
+        function alertContents() {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                var return_obj;
+                if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+                    return_obj = JSON.parse(xmlhttp.responseText);
+                    if (return_obj.status === "success") {
+                        alert("添加成功！");
+                    }
+        }
+            }
+        }
+        function add_description() {
+            var obj = document.getElementsByName("statistics");
+            var description=document.getElementById("description").value;
+            var json = {"do":"add_description","description":description};
+            var check_val = [];
+            for (var i = 0; i < obj.length; i++) {
+                if (obj[i].checked) {
+                    check_val.push(obj[i].value);
+                    {#alert(obj[i].value);#}
+                }
+            }
+            json["statistics"] = check_val;
+            json["file_params"] = "{{ save_id }}";
+            var json_str = JSON.stringify(json);
+            createRequest("{% url 'xxtj:ajax' %}?do=add_description&admin_id={{ admin_id }}&json=" + json_str);
+        }
+        function go_result() {
+        window.location.replace("{% url 'xxtj:result' %}?admin_id={{ admin_id }}");
+    }
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1);
+             }
+             if (c.indexOf(name) === 0) {
+                return c.substring(name.length, c.length);
+             }
+         }
+        return "";
+    }
+
+    </script>
+    <script language="JavaScript" src="{% static 'xxtj/base/js/upload_4.js' %}"></script>
+{% endblock head %}
+{% block base %}
+    <table width="90%" class="table table-bordered">
+        <tr>
+            <td width="20%">请选择您要添加的统计项目</td>
+            <td>
+                <label>
+                    {% for key, value in statistics.items %}
+                    <input type="checkbox" name="statistics" value="{{ key }}">{{ value }}
+                    {% endfor %}
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <td>请写下您要添加的说明</td>
+            <td><label for="description"></label><textarea name="description" id="description" cols="30" rows="10"></textarea></td>
+        </tr>
+        <tr>
+            <td>附加文件</td>
+            <td><input type="file" name="file" id="file" onchange="upload()"></td>
+        </tr>
+{#        <input type="hidden" name="save_id" value="{{ save_id }}">#}
+        <tr>
+            <td colspan="2">
+                <input type="button" onclick="add_description()" value="提交">
+                <input type="button" onclick="go_result()"value="返回">
+                <div class='progress progress-striped active' id='myBar' style='display: none'>
+                    <div class='progress-bar progress-success' id='progress'>
+                        <div id='progress_num'></div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+                    <div id="tips_addmore_div" class="alert alert-success" role="alert" style="display: none">您可以再次点击添加文件以添加更多的照片！</div>
+
+{% endblock base %}

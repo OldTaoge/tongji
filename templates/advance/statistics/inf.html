@@ -1,0 +1,53 @@
+<!-- File:inf.html -->
+<!-- Copyright(C) OldTaoge 2020.All rights reserved.-->
+<!-- By GPL v3.0 -->
+{% extends 'advance/base.html' %}
+{% block base %}
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+			<div class="page-header">
+				<h1>
+					信息统计系统<small>统计信息</small>
+				</h1>
+			</div>
+		</div>
+	</div>
+		<div class="col-sm-8 column">
+            <p>
+                {{ inf }}
+            </p>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>编号</th>
+                        <th>名称</th>
+                        <th>班级</th>
+                        <th>要求照片</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody>
+                {% for item in sta_inf %}
+                    <tr>
+                        <td>{{ item.pk }}</td>
+                        <td>{{ item.statistics_name }}</td>
+                        <td><a href="{% url 'advance:cla_inf' %}?cla={{ item.statistics_class.pk }}" id="cla_inf">点击查看</a></td>
+                        <td>{% if item.need_upload %}
+                                是
+                            {% else %}
+                                否
+                        {% endif %} </td>
+
+                        <td>
+                            <a href="{% url 'advance:edit_sta' %}?sta={{ item.pk }}" id="edit_sta">修改 </a>
+                            <a href="{% url 'advance:del_sta' %}?sta={{ item.pk }}" id="del_sta"> 删除</a>
+                        </td>
+                {% endfor %}
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock base %}
